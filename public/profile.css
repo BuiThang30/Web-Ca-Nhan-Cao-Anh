@@ -1,0 +1,38 @@
+.guard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 60px 0;
+  text-align: center;
+  text-transform: none;
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.8vw, 24px);
+}
+
+.guard[hidden],
+.feed[hidden] {
+  display: none;
+}
+
+/* Hàng avatar + tên + nút ĐỔI ẢNH (khung đăng bài dùng lại class của Forum trong feed.css) */
+.profile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.settings-btn {
+  height: 40px;
+  border-radius: 20px;
+  padding: 0 24px;
+  font-family: 'Momo Trust Display', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}

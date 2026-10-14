@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealSearch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Mona+Sans:wght@300;400;500;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="page.css">
+  <link rel="stylesheet" href="feed.css">
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+  <header class="nav" id="nav" data-active="profile"></header>
+
+  <main class="page-main">
+    <!-- Màn hình yêu cầu đăng nhập -->
+    <div class="guard" id="guard" hidden>
+      <p>Bạn cần đăng nhập và đặt biệt danh để xem trang cá nhân.</p>
+      <button class="btn" id="guardBtn">Đăng nhập</button>
+    </div>
+
+    <!-- Hai đường kẻ trên/dưới nằm trong .feed (feed.css), giống Forum -->
+    <div class="feed" id="feed" hidden>
+      <section>
+        <!-- Khung đăng bài: y hệt Forum (avatar + tên, ô nhập, nút POST ở dòng dưới) -->
+        <div class="create-post-box">
+          <div class="profile-head">
+            <div class="post-head">
+              <div id="meAvatar" class="avatar"></div>
+              <h2 class="post-name" id="meName"></h2>
+            </div>
+            <label class="btn ghost settings-btn" for="avatarFile">ĐỔI ẢNH</label>
+            <input type="file" id="avatarFile" accept="image/jpeg,image/png,image/webp" hidden>
+          </div>
+          <div class="form-err" id="avatarErr" role="alert"></div>
+
+          <div class="input-wrap">
+            <input type="text" id="postText" maxlength="2000" placeholder="Ask Somethings">
+          </div>
+          <div class="composer-action">
+            <button id="postBtn">POST</button>
+          </div>
+          <div class="form-err" id="postErr" role="alert" style="margin-top: 8px; text-align: right;"></div>
+        </div>
+
+        <hr class="rule">
+
+        <!-- Danh sách bài đăng của TÔI (chấm phân trang giống Forum) -->
+        <div id="myPosts"></div>
+      </section>
+
+      <!-- Sidebar bên phải -->
+      <aside class="side">
+        <div class="side-card" id="sideCard"></div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>

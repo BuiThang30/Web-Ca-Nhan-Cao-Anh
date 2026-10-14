@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealSearch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Mona+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+
+  <section id="pick" class="screen active">
+    <header class="nav" id="nav" data-active="quiz"></header>
+
+    <main class="pick-main">
+      <h1 class="pick-title">Bạn đang<br>gặp vấn đề nào</h1>
+      <div class="topics" id="topics"></div>
+    </main>
+  </section>
+
+  <section id="ask" class="screen">
+    <div class="topbar">
+      <button class="back-btn" id="backToPick" aria-label="Quay lại">
+        <svg width="41" height="41" viewBox="0 0 41 41" fill="none" stroke="#007651" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M26 6L11 20.5 26 35"/></svg>
+      </button>
+      <div class="topic-pill" id="askTopic"></div>
+      <button class="submit-btn disabled" id="submitBtn">Gửi</button>
+    </div>
+    <hr class="rule">
+    <div class="ask-hero" id="askHero">
+      <img id="askImg" alt="">
+    </div>
+    <div class="questions" id="questions"></div>
+    <p class="form-err" id="formErr" role="alert"></p>
+  </section>
+
+  <section id="result" class="screen">
+    <div class="topbar">
+      <button class="back-btn" id="backToAsk" aria-label="Quay lại">
+        <svg width="41" height="41" viewBox="0 0 41 41" fill="none" stroke="#007651" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M26 6L11 20.5 26 35"/></svg>
+      </button>
+      <div class="topic-pill" id="resultTopic"></div>
+    </div>
+    <hr class="rule">
+    <div class="result-body">
+      <div class="conclusion">
+        <p class="label">Kết Luận:</p>
+        <h1 class="result-title" id="resultTitle"></h1>
+      </div>
+      <div class="warning">
+        <h2 class="warn-title" id="warnTitle"></h2>
+        <p class="advice" id="advice"></p>
+        <a class="call-btn" id="callBtn" href="tel:115" hidden>Gọi cấp cứu 115</a>
+      </div>
+      <p class="disclaimer">Kết quả chỉ mang tính tham khảo, không thay thế chẩn đoán của bác sĩ. Nếu triệu chứng nặng lên, hãy đến cơ sở y tế gần nhất hoặc gọi 115.</p>
+    </div>
+  </section>
+
+  <script src="common.js"></script>
+  <script src="quiz-data.js"></script>
+  <script src="quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+/* Bố cục Feed & Sidebar */
+.feed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 31.6vw, 455px);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: start;
+  /* Chiều cao cố định của một bài: avatar + khoảng cách + 3 dòng nội dung */
+  --post-h: calc(clamp(48px, 6.2vw, 80px) + 12px + 3 * 1.55 * clamp(15px, 1.6vw, 20px) + 4px);
+  /* Hai đường kẻ ở trên (dưới thanh menu) và dưới (cuối feed) */
+  border-top: 3px solid var(--green);
+  border-bottom: 3px solid var(--green);
+  padding: clamp(24px, 3vw, 44px) 0;
+  margin-top: clamp(16px, 2vw, 28px);
+  margin-bottom: clamp(24px, 3vw, 44px);
+}
+
+@media (max-width: 860px) {
+  .feed { grid-template-columns: minmax(0, 1fr); }
+  .feed .side { order: 2; }
+}
+
+/* Avatar hiển thị chuẩn chỉnh */
+.avatar {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  width: clamp(40px, 4.4vw, 64px);
+  height: clamp(40px, 4.4vw, 64px);
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(20px, 2.5vw, 32px);
+  font-family: 'Momo Trust Display', sans-serif;
+  text-transform: uppercase;
+}
+
+.avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Mũi tên quay lại */
+.back-arrow {
+  display: inline-flex;
+  align-items: center;
+  color: var(--green);
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: opacity 0.2s;
+}
+.back-arrow:hover {
+  opacity: 0.7;
+}
+
+/* Cố định chiều cao vùng danh sách */
+.feed-container {
+  /* Đủ chứa 3 bài cố định kích thước + dot, trang cuối ít bài vẫn giữ nguyên khung */
+  min-height: calc(3 * (var(--post-h) + 56px) + 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+/* Khung sidebar cố định: đủ chứa 4 mục + dot, không co dãn theo nội dung */
+.side-container { height: 650px; display: flex; flex-direction: column; justify-content: space-between; }
+
+/* Khung bình luận cố định chiều cao (đủ chứa 4 bình luận + dot), dot luôn nằm đáy */
+.comment-box {
+  min-height: clamp(440px, 36vw, 500px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Bình luận dài tự xuống dòng, không tràn khung */
+.comment-content { min-width: 0; }
+.comment-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+/* Font chữ và tiêu đề */
+.post-head { display: flex; align-items: center; gap: clamp(12px, 1.6vw, 22px); }
+.post-head > .avatar { width: clamp(48px, 6.2vw, 80px); height: clamp(48px, 6.2vw, 80px); }
+
+.post-name, .comment-meta strong {
+  font-family: 'Momo Trust Display', system-ui, sans-serif;
+  font-size: clamp(20px, 2.5vw, 29px);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.post-body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(15px, 1.6vw, 20px);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--green);
+  text-transform: none;
+}
+
+/* Hover List Bài viết */
+/* Mỗi bài trong danh sách cao cố định (avatar + tối đa 3 dòng nội dung), dài quá thì cắt bằng ...
+   Bấm vào bài để xem đầy đủ và bình luận */
+.clickable-post {
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-bottom: 24px;
+  height: var(--post-h);
+  overflow: hidden;
+}
+.clickable-post:hover { opacity: 0.7; }
+
+.clickable-post .post-body {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ========================================================
+   KHUNG TẠO BÀI VIẾT
+======================================================== */
+.create-post-box { 
+  margin-bottom: 24px; 
+}
+
+.create-post-box .post-head {
+  margin-bottom: 14px;
+}
+
+/* 1. Khung chứa riêng ô nhập văn bản (Nằm ở dòng trên) */
+.input-wrap {
+  display: flex;
+  align-items: center;
+  border: 3px solid var(--green);
+  border-radius: 30px;
+  padding: 0 clamp(20px, 3.5vw, 60px);
+  background: #fff;
+  height: clamp(60px, 6.2vw, 90px);
+}
+
+.input-wrap textarea,
+.input-wrap input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: clamp(16px, 1.8vw, 22px);
+  font-family: var(--font-body);
+  color: var(--green);
+  text-transform: none;
+}
+
+.input-wrap textarea::placeholder,
+.input-wrap input::placeholder {
+  color: var(--green);
+  opacity: 0.65;
+  text-transform: none;
+}
+
+/* 2. Vùng chứa nút POST (Nằm ở dòng dưới, đẩy lệch sang góc phải) */
+.composer-action {
+  display: flex;
+  justify-content: flex-end; /* Đẩy nút POST sát sang góc phải */
+  margin-top: 10px;
+}
+
+/* Nút POST độc lập ở dòng dưới, căn phải bằng mép khung nhập */
+.composer-action button,
+.input-wrap button {
+  background: var(--green);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(16px, 1.8vw, 24px);
+  border-radius: 69px;
+  width: clamp(120px, 19vw, 274px);
+  height: clamp(36px, 3.6vw, 52px);
+  padding: 0;
+  text-align: center;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.composer-action button:hover,
+.input-wrap button:hover { 
+  opacity: 0.85; 
+}
+
+.composer-action button:disabled,
+.input-wrap button:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
+
+/* Nút xóa bài (thùng rác) – dùng ở Forum và Profile */
+.delete-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--green);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+}
+
+.delete-btn:hover {
+  background: #fdf2f4;
+  color: var(--red);
+}
+
+/* Hộp thoại xác nhận (dùng lại .overlay/.modal của common.css) */
+.modal .dialog-text {
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.8vw, 20px);
+  line-height: 1.5;
+  text-transform: none;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal .dialog-actions .btn {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+  cursor: pointer;
+}
+
+.btn.danger {
+  background: var(--red);
+}
+
+/* Phân trang Dots */
+.dots { display: flex; justify-content: center; gap: 10px; margin: 30px 0 10px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--green); background: transparent; cursor: pointer; padding: 0; outline: none; transition: background 0.2s; }
+.dot.active { background: var(--green); }
+
+/* ---------- Khung Sidebar bên phải ---------- */
+.side-card {
+  border: 3px solid var(--green);
+  border-radius: clamp(16px, 1.4vw, 19px);
+  padding: clamp(14px, 1.6vw, 24px) clamp(16px, 1.8vw, 26px);
+  transition: opacity 0.2s;
+}
+
+/* Mỗi mục cao cố định (tên 1 dòng + nội dung 3 dòng), dài quá thì cắt bằng ... */
+.side-item { display: block; width: 100%; height: 114px; overflow: hidden; padding: 8px 4px; border-radius: 16px; cursor: pointer; margin-bottom: 12px; }
+.side-item:hover, .side-item.on { background: #e8f4ef; }
+
+.side-name {
+  font-family: 'Momo Trust Display', sans-serif;
+  font-size: clamp(18px, 1.7vw, 24px);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--green);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-text {
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(13px, 1vw, 14px);
+  line-height: 1.5;
+  text-transform: none;
+  color: var(--green);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.side-rule { border: 0; border-top: 2px solid var(--green); margin: 10px 0; }

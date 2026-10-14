@@ -1,0 +1,438 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+img,
+svg {
+  display: block;
+}
+
+button,
+input,
+textarea {
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:root {
+  --red: #c60239;
+  --green: #007651;
+  --amber: #b86e00;
+  --font: "Momo Trust Display", system-ui, sans-serif;
+  --font-body: "Mona Sans", system-ui, sans-serif;
+  --gutter: clamp(16px, 5.8vw, 83px);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 400;
+  text-transform: uppercase;
+  background: #fff;
+  color: var(--green);
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+/* ---------- Thanh menu (Header) ---------- */
+.nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: clamp(8px, 1.9vw, 27px);
+  padding: clamp(16px, 4.2vw, 52px) var(--gutter) 0;
+  position: relative; /* Dùng làm gốc neo cho dropdown mobile */
+}
+
+/* Nút Toggle (Hamburger Menu) - Mặc định ẨN trên màn hình lớn */
+.nav-toggle {
+  display: none !important; 
+  color: var(--green);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: clamp(8px, 1.9vw, 27px);
+}
+
+.pill {
+  flex: 0 1 262px;
+  min-width: 0;
+  height: 50px;
+  line-height: 50px;
+  padding: 0 clamp(8px, 1.6vw, 22px);
+  border-radius: 69px;
+  background: #fff;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  color: var(--green);
+  font-size: clamp(12px, 2.5vw, 36px);
+  text-align: center;
+  text-transform: uppercase;
+  display: block;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pill:hover,
+.pill.on {
+  background: var(--green);
+  color: #fff;
+}
+
+#loginBtn {
+  flex: 0 1 auto;
+  min-width: min(262px, 20%);
+  max-width: clamp(262px, 40vw, 560px);
+}
+
+.icon-btn {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: #e8f4ef;
+}
+
+/* ---------- Thanh Tìm Kiếm & Dropdown ---------- */
+.search {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-left: auto;
+  min-height: 64px;
+  position: relative; /* Neo cho dropdown */
+}
+
+.search input {
+  width: 0;
+  opacity: 0;
+  padding: 0;
+  height: 50px;
+  border-radius: 69px;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  background: #fff;
+  color: var(--green);
+  font-size: 18px;
+  text-transform: none;
+  font-family: var(--font-body);
+  transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+.search input::placeholder {
+  color: var(--green);
+  opacity: 0.7;
+}
+
+.nav.searching .nav-links {
+  display: none;
+}
+
+.nav.searching .search {
+  flex: 1;
+}
+
+.nav.searching .search input {
+  flex: 1;
+  width: auto;
+  opacity: 1;
+  padding: 0 24px;
+}
+
+/* Hộp thoại Dropdown 5 bài viết */
+.search-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 78px; /* 64px + 14px gap */
+  width: calc(100% - 78px);
+  background: #fff;
+  border: 3px solid var(--green);
+  border-radius: 20px;
+  z-index: 999;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 118, 81, 0.15);
+}
+
+.search-dropdown.open {
+  display: block;
+}
+
+.search-item {
+  display: block;
+  padding: 16px 24px;
+  color: var(--green);
+  font-family: var(--font-body);
+  font-size: 16px;
+  text-transform: none;
+  text-decoration: none;
+  border-bottom: 2px solid #e8f4ef;
+  transition: background 0.2s, font-weight 0.1s;
+  line-height: 1.4;
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-item:hover {
+  background: #e8f4ef;
+  font-weight: 600;
+}
+
+/* ---------- Các thành phần chung khác ---------- */
+.muted {
+  opacity: 0.7;
+  font-size: clamp(14px, 1.4vw, 20px);
+  text-transform: none;
+  line-height: 1.5;
+}
+
+.btn {
+  height: 46px;
+  padding: 0 28px;
+  border-radius: 69px;
+  background: var(--green);
+  color: #fff;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+a.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a.btn[hidden] {
+  display: none;
+}
+
+.btn.ghost {
+  background: #fff;
+  color: var(--green);
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+}
+
+/* ---------- Popup Đăng Nhập / Tài khoản ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.overlay.open {
+  display: flex;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 32px;
+  border: 3px solid var(--green);
+  width: min(440px, 100%);
+  padding: 34px 28px;
+  text-align: center;
+  position: relative;
+  animation: pop 0.18s ease-out;
+}
+
+@keyframes pop {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.modal h3 {
+  font-size: clamp(24px, 4vw, 32px);
+  margin-bottom: 10px;
+}
+
+.modal .close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 30px;
+  color: var(--green);
+  line-height: 1;
+}
+
+.login-title {
+  font-size: clamp(22px, 4vw, 28px);
+  color: var(--red);
+  margin-bottom: 12px;
+}
+
+.login-title span {
+  color: #111;
+}
+
+.title-line {
+  width: 60%;
+  height: 5px;
+  background: var(--red);
+  margin: 0 auto 28px;
+}
+
+.google-btn {
+  width: 100%;
+  height: 68px;
+  border: 2px solid #111;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: clamp(18px, 3vw, 22px);
+  color: #111;
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.google-btn:hover {
+  background: #f3f3f3;
+}
+
+.modal input {
+  width: 100%;
+  height: 54px;
+  margin-top: 20px;
+  border-radius: 69px;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  padding: 0 22px;
+  font-size: 18px;
+  text-transform: none;
+  color: #13322a;
+  text-align: center;
+}
+
+.modal .err {
+  color: var(--red);
+  font-size: 13px;
+  margin-top: 10px;
+  min-height: 18px;
+  text-transform: none;
+  font-family: system-ui, sans-serif;
+}
+
+.modal .btn {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.modal .btn.profile-link {
+  margin-top: 12px;
+}
+
+.divider {
+  border: 0;
+  border-top: 2px solid var(--green);
+  margin: 22px 0 16px;
+}
+
+/* =========================================
+   THIẾT KẾ ĐIỆN THOẠI (Max 768px)
+========================================= */
+@media (max-width: 768px) {
+  .nav {
+    justify-content: space-between;
+  }
+
+  /* Hiện Hamburger Toggle trên Mobile */
+  .nav-toggle {
+    display: flex !important;
+  }
+
+  /* Ẩn Hamburger khi đang bật tìm kiếm */
+  .nav.searching .nav-toggle {
+    display: none !important;
+  }
+
+  /* Chuyển Nav Links thành hộp thoại dọc bên dưới */
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 15px);
+    left: var(--gutter);
+    right: var(--gutter);
+    background: #fff;
+    flex-direction: column;
+    padding: 20px;
+    border: 3px solid var(--green);
+    border-radius: 20px;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0, 118, 81, 0.15);
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links .pill,
+  #loginBtn {
+    width: 100%;
+    max-width: none;
+    flex: none;
+  }
+
+  /* Đẩy search dropdown tràn ngang trên mobile */
+  .search-dropdown {
+    right: 0;
+    width: 100%;
+  }
+}

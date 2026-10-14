@@ -1,0 +1,66 @@
+/* Đường kẻ sát menu */
+.nav-rule {
+  border: 0;
+  border-top: 2px solid var(--green);
+  margin: clamp(14px, 2vw, 28px) var(--gutter) 0;
+}
+
+.blog-list {
+  border-top: 3px solid var(--green);
+  margin-top: clamp(40px, 6vw, 80px); /* Khoảng cách trống giữa đường kẻ trên và danh sách */
+}
+
+.blog-item {
+  display: block;
+  padding: clamp(20px, 3vw, 36px) 0;
+  border-bottom: 3px solid var(--green);
+  font-family: 'Mona Sans', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(20px, 3.3vw, 42px);
+  text-transform: uppercase;
+  color: var(--green);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  transition: background 0.2s, padding 0.2s;
+}
+
+.blog-item:hover {
+  background: #e8f4ef;
+  padding-left: clamp(8px, 1.4vw, 20px);
+}
+
+.article[hidden] {
+  display: none;
+}
+
+.article-title {
+  font-family: 'Mona Sans', system-ui, sans-serif;
+  font-size: clamp(24px, 4.45vw, 64px);
+  line-height: 1.2;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--green);
+  margin: clamp(10px, 1.6vw, 24px) 0;
+  overflow-wrap: anywhere;
+}
+
+.article-body {
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.7vw, 24px);
+  line-height: 1.6;
+  text-transform: none;
+  color: #13322a;
+}
+
+.article-body p {
+  margin-bottom: 1em;
+}
+
+.article-body ul {
+  margin: 0 0 1em;
+  padding-left: 1.4em;
+}
+
+.article-body li {
+  margin-bottom: 0.4em;
+}

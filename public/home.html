@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealSearch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+  <section id="start" class="view active">
+    <p class="start-title">Nếu có các dấu hiệu sau đây,<br>hãy gọi cấp cứu (115) ngay lập tức:</p>
+    <ul class="start-list">
+      <li>Đau đầu dữ dội đột ngột</li>
+      <li>Đau tức ngực</li>
+      <li>Khó thở</li>
+      <li>Yếu liệt nửa người</li>
+    </ul>
+    <button class="start-btn" id="startBtn">Bắt đầu</button>
+  </section>
+
+  <div id="app" style="display: none">
+    <header class="nav" id="nav"></header>
+
+    <main id="home" class="view active">
+      <div class="hero">
+        <img src="images/image-1.png" alt="Trẻ em được đo nhiệt độ" onerror="this.style.display = 'none'">
+      </div>
+      <h1 class="brand">HealSearch</h1>
+      <a class="cta" href="/quiz">
+        <span>HealQuiz</span>
+        <span class="arrow">
+          <svg viewBox="0 0 54 54" fill="none" stroke="#fff" stroke-width="2.5"><path d="M4 27h46M34 11l16 16-16 16"/></svg>
+        </span>
+      </a>
+    </main>
+
+  </div>
+
+  <script src="common.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

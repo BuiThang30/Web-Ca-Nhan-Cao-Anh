@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HealSearch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Mona+Sans:wght@300;400;500;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="page.css">
+  <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+  <header class="nav" id="nav" data-active="blog"></header>
+  
+  <!-- Đường kẻ ngang dưới thanh điều hướng -->
+  <hr class="nav-rule">
+
+  <main class="page-main">
+    <section id="list" class="blog-list"></section>
+
+    <article id="article" class="article" hidden>
+      <a class="back-link" href="/blog" id="backLink" aria-label="Quay lại danh sách bài viết">
+        <svg viewBox="0 0 180 40" fill="none" stroke="#007651" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M176 20H6M24 4L6 20l18 16"/></svg>
+      </a>
+      <hr class="rule">
+      <h2 class="article-title" id="articleTitle"></h2>
+      <div class="article-body" id="articleBody"></div>
+      <hr class="rule">
+    </article>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="blog-data.js"></script>
+  <script src="blog.js"></script>
+</body>
+</html>

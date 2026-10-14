@@ -1,0 +1,306 @@
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* ---------- Chọn vấn đề ---------- */
+.pick-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(40px, 8vw, 120px);
+  min-height: calc(100vh - 110px);
+  padding: clamp(16px, 2vw, 30px) var(--gutter) clamp(32px, 5vw, 70px);
+}
+
+.pick-title {
+  font-size: clamp(36px, 8.9vw, 128px);
+  line-height: 1.15;
+  font-weight: 400;
+}
+
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 1.6vw, 24px) clamp(14px, 2.2vw, 32px);
+}
+
+.topic {
+  min-height: clamp(52px, 5.4vw, 78px);
+  padding: 6px clamp(20px, 4vw, 60px);
+  border-radius: 69px;
+  background: #fff;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  color: var(--green);
+  font-size: clamp(18px, 3.3vw, 48px);
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  max-width: 100%;
+  transition: background 0.2s, color 0.2s;
+}
+
+.topic:hover {
+  background: var(--green);
+  color: #fff;
+}
+
+/* ---------- Thanh trên cùng (câu hỏi & kết quả) ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1vw, 14px);
+  padding: clamp(16px, 3.8vw, 55px) var(--gutter) 0;
+}
+
+.back-btn {
+  flex: none;
+  width: clamp(44px, 5.4vw, 78px);
+  height: clamp(44px, 5.4vw, 78px);
+  border-radius: 50%;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn svg {
+  width: 52%;
+  height: 52%;
+}
+
+.back-btn:hover {
+  background: #e8f4ef;
+}
+
+.topic-pill {
+  min-width: 0;
+  min-height: clamp(44px, 5.4vw, 78px);
+  padding: 4px clamp(18px, 4vw, 60px);
+  border-radius: 69px;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  font-size: clamp(16px, 3.3vw, 48px);
+  line-height: 1.15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.submit-btn {
+  flex: none;
+  margin-left: auto;
+  min-width: clamp(96px, 22vw, 320px);
+  min-height: clamp(44px, 5.4vw, 78px);
+  padding: 0 clamp(16px, 3vw, 40px);
+  border-radius: 69px;
+  background: var(--green);
+  color: #fff;
+  font-size: clamp(16px, 3.3vw, 48px);
+  text-transform: uppercase;
+  transition: opacity 0.2s, filter 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn:hover {
+  filter: brightness(1.15);
+}
+
+.submit-btn.disabled {
+  opacity: 0.45;
+}
+
+.rule {
+  border: 0;
+  border-top: 2px solid var(--green);
+  margin: clamp(14px, 2vw, 28px) var(--gutter);
+}
+
+/* ---------- Câu hỏi ---------- */
+.ask-hero {
+  margin: 0 var(--gutter);
+  height: clamp(200px, 49.8vw, 717px);
+  overflow: hidden;
+  background: linear-gradient(135deg, #d9efe7, #9fd3bf);
+}
+
+.ask-hero.empty {
+  display: none;
+}
+
+.ask-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.questions {
+  margin: 0 var(--gutter);
+  border-bottom: 2px solid var(--green);
+}
+
+.question {
+  padding: clamp(24px, 3vw, 44px) 0;
+}
+
+.question + .question {
+  border-top: 2px solid var(--green);
+}
+
+.q-title {
+  font-size: clamp(20px, 2.8vw, 40px);
+  line-height: 1.2;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+.question.missing .q-title {
+  color: var(--red);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(8px, 1vw, 14px);
+  margin-top: clamp(16px, 2.4vw, 36px);
+}
+
+.option {
+  max-width: 100%;
+  min-height: clamp(42px, 4.4vw, 63px);
+  padding: 8px clamp(18px, 3vw, 44px);
+  border-radius: 69px;
+  background: #fff;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  color: var(--green);
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.7vw, 24px);
+  line-height: 1.35;
+  text-align: center;
+  text-transform: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.option:hover {
+  background: #e8f4ef;
+}
+
+.option.selected {
+  background: var(--green);
+  color: #fff;
+}
+
+.question.right {
+  text-align: right;
+}
+
+.question.right .options {
+  align-items: flex-end;
+}
+
+.form-err {
+  min-height: 24px;
+  margin: 14px var(--gutter) 40px;
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.5vw, 20px);
+  text-transform: none;
+}
+
+/* ---------- Kết quả ---------- */
+.result-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(32px, 6vw, 90px);
+  min-height: calc(100vh - 170px);
+  margin: 0 var(--gutter);
+  padding-bottom: 40px;
+}
+
+.conclusion {
+  padding-bottom: clamp(18px, 2.4vw, 32px);
+  border-bottom: 2px solid var(--green);
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.7vw, 24px);
+  text-transform: none;
+}
+
+.result-title {
+  margin-top: clamp(8px, 1.4vw, 20px);
+  font-size: clamp(24px, 3.3vw, 48px);
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--red);
+}
+
+.warning {
+  padding-bottom: clamp(18px, 2.4vw, 32px);
+  border-bottom: 2px solid var(--green);
+}
+
+.warn-title {
+  font-size: clamp(28px, 4.45vw, 64px);
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+.lv-cap-cuu,
+.lv-cao {
+  color: var(--red);
+}
+
+.lv-trung-binh {
+  color: var(--amber);
+}
+
+.lv-thap {
+  color: var(--green);
+}
+
+.advice {
+  margin-top: clamp(10px, 1.6vw, 24px);
+  font-family: var(--font-body);
+  font-size: clamp(18px, 3.3vw, 48px);
+  line-height: 1.5;
+  text-transform: none;
+}
+
+.call-btn {
+  display: inline-block;
+  margin-top: clamp(16px, 2.4vw, 32px);
+  padding: 12px clamp(20px, 3vw, 44px);
+  border-radius: 69px;
+  background: var(--red);
+  color: #fff;
+  font-size: clamp(16px, 2vw, 28px);
+}
+
+.call-btn[hidden] {
+  display: none;
+}
+
+.call-btn:hover {
+  filter: brightness(1.15);
+}
+
+.disclaimer {
+  font-family: var(--font-body);
+  font-size: clamp(13px, 1.3vw, 18px);
+  line-height: 1.5;
+  text-transform: none;
+  opacity: 0.75;
+}
