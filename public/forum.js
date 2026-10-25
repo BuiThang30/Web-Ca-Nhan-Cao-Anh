@@ -15,38 +15,124 @@ const rightLimit = 4;
 let rightOffset = 0;
 let rightTotal = 0;
 
+// Số bình luận mới nhất hiển thị ngay dưới mỗi bài ở trang chủ
+const FEED_COMMENTS = 1;
+
 if (query) {
   const searchInput = document.querySelector("#searchInput");
   if (searchInput) searchInput.value = query;
 }
 
+/* ---------- Tiện ích ---------- */
+// Chống chèn HTML từ nội dung người dùng
+function esc(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // Hàm hỗ trợ render HTML cho Avatar
 function getAvatarHtml(nickname, hasAvatar) {
-  if (!nickname) return '';
+  if (!nickname) return "";
   if (hasAvatar) {
-    return `<img src="/api/avatar/${encodeURIComponent(nickname)}" alt="${nickname}">`;
+    return `<img src="/api/avatar/${encodeURIComponent(nickname)}" alt="${esc(nickname)}">`;
   }
-  return nickname.charAt(0).toUpperCase();
+  return esc(nickname.charAt(0).toUpperCase());
+}
+
+// Sắp xếp bình luận: mới nhất lên đầu
+function cmpNewest(a, b) {
+  if (a.id != null && b.id != null) return b.id - a.id;
+  return (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);
+}
+
+async function fetchComments(postId) {
+  const data = await api(`/api/posts/${postId}/comments?limit=500`);
+  return (data.items || []).slice().sort(cmpNewest);
+}
+
+function currentUser() {
+  const name = (typeof user !== "undefined" && user?.nickname) ? user.nickname : "";
+  const hasAvatar = (typeof user !== "undefined" && user?.hasAvatar) ? user.hasAvatar : false;
+  return { name, hasAvatar, avatarHtml: getAvatarHtml(name, hasAvatar) };
+}
+
+function commentItemHtml(cmt) {
+  return `
+    <div class="fp-comment">
+      <div class="avatar sm">${getAvatarHtml(cmt.nickname, cmt.has_avatar)}</div>
+      <div class="fp-comment-main">
+        <div class="fp-comment-name">${esc(cmt.nickname || "USER")}</div>
+        <div class="fp-comment-body"><p>${esc(cmt.content)}</p></div>
+      </div>
+    </div>`;
 }
 
 // -------------------------------------------------------------------
 // 1. TẢI DANH SÁCH BÀI VIẾT (CỘT TRÁI)
 // -------------------------------------------------------------------
+async function loadFeedComments(postId) {
+  const box = document.getElementById(`fpc-${postId}`);
+  if (!box) return;
+  try {
+    const comments = await fetchComments(postId);
+    const shown = comments.slice(0, FEED_COMMENTS);
+    let html = shown.map(commentItemHtml).join("");
+    if (comments.length > shown.length) {
+      html += `<button type="button" class="fp-more" onclick="goToPost(${postId})">Xem tất cả ${comments.length} bình luận</button>`;
+    }
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = "";
+  }
+}
+
+// Gắn ô "Comment" dưới mỗi bài: nhấn Enter để gửi
+function bindFeedCommentInput(input) {
+  const postId = Number(input.dataset.post);
+  const err = document.getElementById(`fpe-${postId}`);
+
+  input.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter" || e.isComposing) return;
+    e.preventDefault();
+
+    if (!user?.nickname) {
+      err.textContent = "Bạn cần đăng nhập để bình luận.";
+      return;
+    }
+    const content = input.value.trim();
+    if (!content) return;
+
+    input.disabled = true;
+    try {
+      await api(`/api/posts/${postId}/comments`, { method: "POST", body: { content } });
+      input.value = "";
+      err.textContent = "";
+      await loadFeedComments(postId); // bình luận mới hiện ngay, nằm trên cùng
+    } catch (ex) {
+      err.textContent = ex.message || "Lỗi khi gửi bình luận.";
+    }
+    input.disabled = false;
+    input.focus();
+  });
+}
+
 async function loadMainFeed() {
   try {
     const data = await api(`/api/posts?limit=${leftLimit}&offset=${leftOffset}` + (query ? "&q=" + encodeURIComponent(query) : ""));
     leftTotal = data.total || 0;
-    
-    // Lấy thông tin User đang đăng nhập
-    const myName = (typeof user !== "undefined" && user?.nickname) ? user.nickname : "CHƯA ĐĂNG NHẬP";
-    const myHasAvatar = (typeof user !== "undefined" && user?.hasAvatar) ? user.hasAvatar : false;
-    const myAvatarHtml = getAvatarHtml(myName, myHasAvatar);
+
+    const me = currentUser();
+    const myName = me.name || "CHƯA ĐĂNG NHẬP";
 
     let html = `
       <div class="create-post-box">
         <div class="post-head">
-          <div class="avatar">${myAvatarHtml}</div>
-          <h2 class="post-name">${myName}</h2>
+          <div class="avatar">${me.avatarHtml || getAvatarHtml(myName, false)}</div>
+          <h2 class="post-name">${esc(myName)}</h2>
         </div>
         <div class="input-wrap">
           <input type="text" id="postInput" placeholder="Ask Somethings">
@@ -62,24 +148,34 @@ async function loadMainFeed() {
     `;
 
     if (data.items && data.items.length > 0) {
-      data.items.forEach(post => {
-        const authorName = post.nickname || 'USER';
+      data.items.forEach((post) => {
+        const authorName = post.nickname || "USER";
         html += `
-          <div class="clickable-post" onclick="goToPost(${post.id})">
-            <div class="post-head">
+          <article class="feed-post">
+            <div class="post-head fp-click" onclick="goToPost(${post.id})">
               <div class="avatar">${getAvatarHtml(authorName, post.has_avatar)}</div>
-              <h2 class="post-name">${authorName}</h2>
+              <h2 class="post-name">${esc(authorName)}</h2>
             </div>
-            <p class="post-body" style="margin-top:12px; text-transform:none;">${post.content}</p>
-          </div>
+            <hr class="rule">
+            <p class="post-body fp-click" onclick="goToPost(${post.id})">${esc(post.content)}</p>
+
+            <div class="fp-comment-row">
+              <div class="avatar sm">${me.avatarHtml}</div>
+              <div class="fp-input-wrap">
+                <input type="text" class="fp-input" data-post="${post.id}" placeholder="Comment" autocomplete="off">
+              </div>
+            </div>
+            <div class="form-err fp-err" id="fpe-${post.id}"></div>
+            <div class="fp-comments" id="fpc-${post.id}"></div>
+          </article>
           <hr class="rule">
         `;
       });
     } else {
       html += `<div class="empty">Chưa có bài đăng nào.</div>`;
     }
-    
-    html += `</div>`; 
+
+    html += `</div>`;
 
     // Phân trang
     const totalPages = Math.ceil(leftTotal / leftLimit);
@@ -87,14 +183,15 @@ async function loadMainFeed() {
       const currentPage = Math.floor(leftOffset / leftLimit);
       html += `<div class="dots">`;
       for (let i = 0; i < totalPages; i++) {
-        html += `<button class="dot ${i === currentPage ? 'active' : ''}" onclick="changeLeftPage(${i})"></button>`;
+        html += `<button class="dot ${i === currentPage ? "active" : ""}" onclick="changeLeftPage(${i})"></button>`;
       }
       html += `</div>`;
     }
 
-    html += `</div>`; 
+    html += `</div>`;
     postBox.innerHTML = html;
 
+    // Ô đăng bài mới
     const submitBtn = document.getElementById("submitPostBtn");
     const postInput = document.getElementById("postInput");
     const postErr = document.getElementById("postErr");
@@ -109,13 +206,13 @@ async function loadMainFeed() {
         postErr.textContent = "Hãy nhập nội dung bài đăng.";
         return;
       }
-      
+
       submitBtn.disabled = true;
       try {
         await api("/api/posts", { method: "POST", body: { content } });
         postInput.value = "";
         postErr.textContent = "";
-        leftOffset = 0; 
+        leftOffset = 0;
         rightOffset = 0;
         await loadMainFeed();
         await loadSidebarFeed();
@@ -125,17 +222,23 @@ async function loadMainFeed() {
       submitBtn.disabled = false;
     };
 
+    // Ô bình luận + bình luận mới nhất của từng bài
+    postBox.querySelectorAll(".fp-input").forEach(bindFeedCommentInput);
+    if (data.items) {
+      data.items.forEach((post) => loadFeedComments(post.id));
+    }
+
     history.replaceState(null, "", "/forum" + (query ? "?q=" + encodeURIComponent(query) : ""));
   } catch (e) {
     postBox.innerHTML = '<div class="empty">Lỗi tải bài viết.</div>';
   }
 }
 
-window.changeLeftPage = function(pageIndex) {
+window.changeLeftPage = function (pageIndex) {
   leftOffset = pageIndex * leftLimit;
   loadMainFeed();
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
+};
 
 // -------------------------------------------------------------------
 // 2. TẢI SIDEBAR (CỘT PHẢI)
@@ -146,27 +249,27 @@ async function loadSidebarFeed() {
     rightTotal = data.total || 0;
 
     let html = `<div class="side-container"><div>`;
-    
+
     if (data.items && data.items.length > 0) {
-      data.items.forEach(post => {
-        const authorName = post.nickname || 'USER';
+      data.items.forEach((post) => {
+        const authorName = post.nickname || "USER";
         html += `
           <div class="side-item" onclick="goToPost(${post.id})">
-            <h4 class="side-name">${authorName}</h4>
-            <p class="side-text" style="text-transform:none;">${post.content}</p>
+            <h4 class="side-name">${esc(authorName)}</h4>
+            <p class="side-text" style="text-transform:none;">${esc(post.content)}</p>
           </div>
           <hr class="side-rule">
         `;
       });
     }
-    html += `</div>`; 
-    
+    html += `</div>`;
+
     const totalPages = Math.ceil(rightTotal / rightLimit);
     if (totalPages > 1) {
       const currentPage = Math.floor(rightOffset / rightLimit);
       html += `<div class="dots" style="margin-top:auto;">`;
       for (let i = 0; i < totalPages; i++) {
-        html += `<button class="dot ${i === currentPage ? 'active' : ''}" onclick="changeRightPage(${i})"></button>`;
+        html += `<button class="dot ${i === currentPage ? "active" : ""}" onclick="changeRightPage(${i})"></button>`;
       }
       html += `</div>`;
     }
@@ -178,10 +281,10 @@ async function loadSidebarFeed() {
   }
 }
 
-window.changeRightPage = function(pageIndex) {
+window.changeRightPage = function (pageIndex) {
   rightOffset = pageIndex * rightLimit;
   loadSidebarFeed();
-}
+};
 
 // -------------------------------------------------------------------
 // 3. GIAO DIỆN CHI TIẾT BÀI VIẾT VÀ BÌNH LUẬN
@@ -241,17 +344,14 @@ const TRASH_ICON = `
 async function showPostDetail(post) {
   let comments = [];
   try {
-    const commentsData = await api(`/api/posts/${post.id}/comments?limit=500`);
-    comments = commentsData.items || [];
+    comments = await fetchComments(post.id); // đã sắp xếp mới nhất lên đầu
   } catch (e) {}
-  
-  const authorName = post.nickname || 'USER';
-  
-  const myName = (typeof user !== "undefined" && user?.nickname) ? user.nickname : "";
-  const myHasAvatar = (typeof user !== "undefined" && user?.hasAvatar) ? user.hasAvatar : false;
-  const myAvatarHtml = getAvatarHtml(myName, myHasAvatar);
 
+  const authorName = post.nickname || "USER";
+  const me = currentUser();
   const isMine = !!user?.nickname && user.nickname === post.nickname;
+  // Chủ bài hoặc admin (server cũng kiểm tra lại quyền này)
+  const canDelete = isMine || !!user?.isAdmin;
 
   postBox.innerHTML = `
     <!-- Nút Mũi Tên Quay Lại -->
@@ -261,26 +361,25 @@ async function showPostDetail(post) {
         <polyline points="12 19 5 12 12 5"></polyline>
       </svg>
     </div>
-    
+
     <div class="post-item detail-view">
       <div class="post-head">
         <div class="avatar">${getAvatarHtml(authorName, post.has_avatar)}</div>
-        <h2 class="post-name">${authorName}</h2>
-        ${isMine ? `<button class="delete-btn" id="deletePostBtn" title="Xóa bài viết" aria-label="Xóa bài viết">${TRASH_ICON}</button>` : ''}
+        <h2 class="post-name">${esc(authorName)}</h2>
+        ${canDelete ? `<button class="delete-btn" id="deletePostBtn" title="Xóa bài viết" aria-label="Xóa bài viết">${TRASH_ICON}</button>` : ""}
       </div>
-      <p class="post-body" style="margin-top: 12px; text-transform:none;">${post.content}</p>
+      <hr class="rule">
+      <p class="post-body" style="margin-top: 12px; text-transform:none;">${esc(post.content)}</p>
     </div>
-    <hr class="rule">
-    
-    <!-- Box Bình Luận Mới: Có Avatar và căn giữa -->
-    <div class="comment-row" style="margin-bottom: 30px; display: flex; align-items: center; gap: clamp(12px, 1.6vw, 22px);">
-      <div class="avatar" style="width: clamp(48px, 6.2vw, 80px); height: clamp(48px, 6.2vw, 80px);">${myAvatarHtml}</div>
-      <div style="flex: 1; border: 3px solid var(--green); border-radius: 60px; height: clamp(50px, 6vw, 75px); display: flex; align-items: center; padding: 0 24px;">
-        <input type="text" id="newCommentInput" placeholder="Viết bình luận (nhấn Enter để gửi)..." style="width:100%; border:none; outline:none; font-size: clamp(16px, 1.8vw, 20px); background: transparent; color: var(--green); font-family: var(--font-body); text-transform: none;">
+
+    <div class="fp-comment-row">
+      <div class="avatar sm">${me.avatarHtml}</div>
+      <div class="fp-input-wrap">
+        <input type="text" id="newCommentInput" placeholder="Comment" autocomplete="off">
       </div>
     </div>
-    <div id="commentErr" class="form-err" style="margin-top: -20px; margin-bottom: 20px; padding-left: 80px;"></div>
-    
+    <div id="commentErr" class="form-err fp-err"></div>
+
     <!-- Danh sách Comments -->
     <div id="commentListBox"></div>
   `;
@@ -294,29 +393,24 @@ async function showPostDetail(post) {
     if (commentPage > totalPages - 1) commentPage = Math.max(totalPages - 1, 0);
     const pageItems = comments.slice(commentPage * commentLimit, (commentPage + 1) * commentLimit);
 
-    let html = `<div class="comment-list">` + (pageItems.length > 0 ? pageItems.map(cmt => `
-      <div class="comment" style="margin-bottom: 20px; display: flex; gap: clamp(12px, 1.6vw, 22px);">
-        <div class="avatar" style="width: clamp(48px, 6.2vw, 80px); height: clamp(48px, 6.2vw, 80px);">${getAvatarHtml(cmt.nickname, cmt.has_avatar)}</div>
-        <div class="comment-content" style="flex:1; min-width:0;">
-          <div class="comment-meta" style="margin-bottom: 6px;"><strong>${cmt.nickname || 'USER'}</strong></div>
-          <div style="border: 3px solid var(--green); border-radius: 20px; padding: 15px 24px;">
-            <p class="comment-text" style="font-size: clamp(15px, 1.6vw, 20px); font-family: var(--font-body); color: var(--green); margin:0; text-transform: none;">${cmt.content}</p>
-          </div>
-        </div>
-      </div>
-    `).join('') : '<p class="muted" style="font-family: var(--font-body); font-size: 18px; text-transform: none;">Chưa có bình luận nào.</p>') + `</div>`;
+    let html =
+      `<div class="comment-list">` +
+      (pageItems.length > 0
+        ? pageItems.map(commentItemHtml).join("")
+        : '<p class="muted" style="font-family: var(--font-body); font-size: 18px; text-transform: none;">Chưa có bình luận nào.</p>') +
+      `</div>`;
 
     if (totalPages > 1) {
       html += `<div class="dots">`;
       for (let i = 0; i < totalPages; i++) {
-        html += `<button class="dot ${i === commentPage ? 'active' : ''}" data-page="${i}"></button>`;
+        html += `<button class="dot ${i === commentPage ? "active" : ""}" data-page="${i}"></button>`;
       }
       html += `</div>`;
     }
 
     // Có phân trang -> bọc trong khung cố định chiều cao để không bị nhảy kích cỡ
     commentListBox.innerHTML = totalPages > 1 ? `<div class="comment-box">${html}</div>` : html;
-    commentListBox.querySelectorAll(".dot").forEach(btn => {
+    commentListBox.querySelectorAll(".dot").forEach((btn) => {
       btn.onclick = () => {
         commentPage = Number(btn.dataset.page);
         renderComments();
@@ -347,24 +441,25 @@ async function showPostDetail(post) {
 
   const commentInput = document.getElementById("newCommentInput");
   const commentErr = document.getElementById("commentErr");
-  
-  commentInput.addEventListener("keypress", async (e) => {
-    if (e.key === "Enter") {
-      if (!user?.nickname) {
-        commentErr.textContent = "Bạn cần đăng nhập để bình luận.";
-        return;
-      }
-      const content = commentInput.value.trim();
-      if (!content) return;
-      
-      commentInput.disabled = true;
-      try {
-        await api(`/api/posts/${post.id}/comments`, { method: "POST", body: { content } });
-        showById(post.id); 
-      } catch (err) {
-        commentErr.textContent = err.message || "Lỗi khi gửi bình luận.";
-        commentInput.disabled = false;
-      }
+
+  commentInput.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter" || e.isComposing) return;
+    e.preventDefault();
+
+    if (!user?.nickname) {
+      commentErr.textContent = "Bạn cần đăng nhập để bình luận.";
+      return;
+    }
+    const content = commentInput.value.trim();
+    if (!content) return;
+
+    commentInput.disabled = true;
+    try {
+      await api(`/api/posts/${post.id}/comments`, { method: "POST", body: { content } });
+      showById(post.id); // tải lại, bình luận mới nằm trên cùng
+    } catch (err) {
+      commentErr.textContent = err.message || "Lỗi khi gửi bình luận.";
+      commentInput.disabled = false;
     }
   });
 
@@ -398,8 +493,8 @@ async function start() {
 }
 
 document.addEventListener("auth-change", () => {
-  if (!wantedId) { 
-    loadMainFeed(); 
+  if (!wantedId) {
+    loadMainFeed();
   } else {
     showById(wantedId);
   }

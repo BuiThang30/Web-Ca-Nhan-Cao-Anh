@@ -301,3 +301,125 @@
 }
 
 .side-rule { border: 0; border-top: 2px solid var(--green); margin: 10px 0; }
+
+/* ========================================================
+   BÀI VIẾT + BÌNH LUẬN NGAY TRÊN DANH SÁCH (Forum & Profile)
+======================================================== */
+.dot.on { background: var(--green); }
+
+.feed-post { padding: clamp(12px, 1.6vw, 24px) 0; }
+
+/* Đường kẻ dưới tên sát nội dung, giống thiết kế */
+.feed-post > .rule { margin: clamp(10px, 1.2vw, 16px) 0; }
+
+/* Vùng bấm để mở trang chi tiết (tên + nội dung bài) */
+.fp-click { cursor: pointer; transition: opacity 0.2s; }
+.fp-click:hover { opacity: 0.7; }
+
+/* Nội dung bài ở danh sách: tối đa 3 dòng */
+.feed-post .post-body {
+  margin-top: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Avatar nhỏ cho ô bình luận / bình luận */
+.avatar.sm {
+  flex: none;
+  width: clamp(48px, 6.2vw, 80px);
+  height: clamp(48px, 6.2vw, 80px);
+  font-size: clamp(18px, 2.4vw, 32px);
+}
+
+/* Ô "Comment" */
+.fp-comment-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 22px);
+  margin: clamp(16px, 2vw, 28px) 0 12px;
+}
+
+.fp-input-wrap {
+  flex: 1;
+  min-width: 0;
+  height: clamp(50px, 6vw, 75px);
+  padding: 0 clamp(18px, 2.4vw, 32px);
+  border: 3px solid var(--green);
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.fp-input-wrap input,
+.fp-input-wrap button {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--green);
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.8vw, 24px);
+  text-align: left;
+  text-transform: none;
+}
+
+.fp-input-wrap button { cursor: pointer; }
+
+.fp-input-wrap input::placeholder { color: var(--green); opacity: 0.8; }
+
+.fp-err {
+  min-height: 0;
+  margin: 0 0 8px;
+  padding-left: clamp(60px, 7.8vw, 102px);
+}
+
+/* Bình luận (mới nhất ở trên cùng) */
+.fp-comment {
+  display: flex;
+  gap: clamp(12px, 1.6vw, 22px);
+  margin-bottom: 20px;
+}
+
+.fp-comment-main { flex: 1; min-width: 0; }
+
+.fp-comment-name {
+  margin-bottom: 6px;
+  font-family: 'Momo Trust Display', system-ui, sans-serif;
+  font-size: clamp(16px, 1.9vw, 24px);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.fp-comment-body {
+  padding: 15px 24px;
+  border: 3px solid var(--green);
+  border-radius: 20px;
+}
+
+.fp-comment-body p {
+  margin: 0;
+  color: var(--green);
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.6vw, 20px);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-transform: none;
+}
+
+.fp-more {
+  margin: 0 0 8px clamp(60px, 7.8vw, 102px);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--green);
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.5vw, 20px);
+  text-decoration: underline;
+  text-transform: none;
+  cursor: pointer;
+}

@@ -78,6 +78,75 @@ const TRASH_ICON = `
   </svg>
 `;
 
+/* ---------- Bình luận mới nhất ngay dưới mỗi bài (giống Forum) ---------- */
+const PREVIEW_COMMENTS = 1;
+
+// Mới nhất lên đầu
+function cmpNewest(a, b) {
+  if (a.id != null && b.id != null) return b.id - a.id;
+  return (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0);
+}
+
+async function fetchComments(postId) {
+  const data = await api(`/api/posts/${postId}/comments?limit=500`);
+  return (data.items || []).slice().sort(cmpNewest);
+}
+
+function commentItemHtml(cmt) {
+  return `
+    <div class="fp-comment">
+      <div class="avatar sm">${getAvatarHtml(cmt.nickname, cmt.has_avatar)}</div>
+      <div class="fp-comment-main">
+        <div class="fp-comment-name">${esc(cmt.nickname || "USER")}</div>
+        <div class="fp-comment-body"><p>${esc(cmt.content)}</p></div>
+      </div>
+    </div>`;
+}
+
+async function loadPostComments(postId) {
+  const box = document.getElementById(`fpc-${postId}`);
+  if (!box) return;
+  try {
+    const comments = await fetchComments(postId);
+    const shown = comments.slice(0, PREVIEW_COMMENTS);
+    let html = shown.map(commentItemHtml).join("");
+    if (comments.length > shown.length) {
+      html += `<button type="button" class="fp-more" data-open="${postId}">Xem tất cả ${comments.length} bình luận</button>`;
+    }
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = "";
+  }
+}
+
+// Ô "Comment" dưới mỗi bài: nhấn Enter để gửi
+function bindCommentInputs() {
+  myPosts.querySelectorAll(".fp-input").forEach((input) => {
+    const postId = Number(input.dataset.post);
+    const err = document.getElementById(`fpe-${postId}`);
+
+    input.addEventListener("keydown", async (e) => {
+      if (e.key !== "Enter" || e.isComposing) return;
+      e.preventDefault();
+
+      const content = input.value.trim();
+      if (!content) return;
+
+      input.disabled = true;
+      try {
+        await api(`/api/posts/${postId}/comments`, { method: "POST", body: { content } });
+        input.value = "";
+        err.textContent = "";
+        await loadPostComments(postId); // bình luận mới nằm trên cùng
+      } catch (ex) {
+        err.textContent = ex.message || "Lỗi khi gửi bình luận.";
+      }
+      input.disabled = false;
+      input.focus();
+    });
+  });
+}
+
 /* ---------- 1. Bài đăng của tôi (cột trái, giống Forum) ---------- */
 async function loadMine() {
   try {
@@ -96,14 +165,24 @@ async function loadMine() {
     if (items.length) {
       items.forEach((post) => {
         html += `
-          <div class="clickable-post" data-id="${post.id}">
-            <div class="post-head">
+          <article class="feed-post">
+            <div class="post-head fp-click" data-open="${post.id}">
               <div class="avatar">${getAvatarHtml(user.nickname, user.hasAvatar)}</div>
               <h2 class="post-name">${esc(user.nickname)}</h2>
               <button class="delete-btn" data-del="${post.id}" title="Xóa bài viết" aria-label="Xóa bài viết">${TRASH_ICON}</button>
             </div>
-            <p class="post-body" style="margin-top:12px; text-transform:none;">${esc(post.content)}</p>
-          </div>
+            <hr class="rule">
+            <p class="post-body fp-click" data-open="${post.id}">${esc(post.content)}</p>
+
+            <div class="fp-comment-row">
+              <div class="avatar sm">${getAvatarHtml(user.nickname, user.hasAvatar)}</div>
+              <div class="fp-input-wrap">
+                <input type="text" class="fp-input" data-post="${post.id}" placeholder="Comment" maxlength="1000" autocomplete="off">
+              </div>
+            </div>
+            <div class="form-err fp-err" id="fpe-${post.id}"></div>
+            <div class="fp-comments" id="fpc-${post.id}"></div>
+          </article>
           <hr class="rule">
         `;
       });
@@ -126,12 +205,9 @@ async function loadMine() {
     html += `</div>`;
     myPosts.innerHTML = html;
 
-    // Bấm vào bài -> sang trang tương ứng bên Forum
-    myPosts.querySelectorAll(".clickable-post").forEach((el) => {
-      el.onclick = () => {
-        location.href = `/forum?post=${el.dataset.id}`;
-      };
-    });
+    // Ô bình luận + bình luận mới nhất của từng bài
+    bindCommentInputs();
+    items.forEach((post) => loadPostComments(post.id));
 
     // Bấm thùng rác -> xóa bài của mình
     myPosts.querySelectorAll(".delete-btn").forEach((btn) => {
@@ -245,6 +321,13 @@ async function submitPost() {
 
   postBtn.disabled = false;
 }
+
+// Bấm vào tên/nội dung bài hoặc "Xem tất cả" -> sang trang tương ứng bên Forum
+// (nút thùng rác đã chặn click lan ra nên không bị chuyển trang)
+myPosts.addEventListener("click", (e) => {
+  const target = e.target.closest("[data-open]");
+  if (target) location.href = `/forum?post=${target.dataset.open}`;
+});
 
 postBtn.onclick = submitPost;
 postText.addEventListener("keydown", (e) => {

@@ -10,6 +10,23 @@ const oauth = CLIENT_ID ? new OAuth2Client(CLIENT_ID) : null;
 const POST_MAX = 2000;
 const COMMENT_MAX = 1000;
 
+/*
+  Tài khoản admin: khai báo trong file .env, ví dụ
+    ADMIN_EMAILS=email-cua-ban@gmail.com
+  (nhiều email thì ngăn cách bằng dấu phẩy). Admin được xóa mọi bài đăng.
+  Chỉ tính là admin khi đăng nhập bằng Google (đã xác thực email). Đăng nhập giả lập
+  (/auth/dev) ai cũng gõ được email bất kỳ nên mặc định KHÔNG có quyền admin;
+  muốn thử trên máy local thì thêm ALLOW_DEV_ADMIN=1 vào .env.
+*/
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((item) => item.trim().toLowerCase())
+  .filter(Boolean);
+const DEV_ADMIN = process.env.ALLOW_DEV_ADMIN === "1";
+
+const isAdminEmail = (email, verified) =>
+  !!email && ADMIN_EMAILS.includes(String(email).toLowerCase()) && (verified || DEV_ADMIN);
+
 const router = express.Router();
 
 /* ---------- Phiên đăng nhập (lưu trong RAM) ---------- */
@@ -18,9 +35,9 @@ const sessions = new Map();
 
 const tokenOf = (req) => (req.headers.cookie || "").match(/(?:^|;\s*)hs_sid=([^;]+)/)?.[1];
 
-function startSession(res, email) {
+function startSession(res, email, verified = false) {
   const token = crypto.randomBytes(32).toString("hex");
-  sessions.set(token, { email, exp: Date.now() + SESSION_MS });
+  sessions.set(token, { email, verified, exp: Date.now() + SESSION_MS });
 
   res.setHeader(
     "Set-Cookie",
@@ -31,13 +48,21 @@ function startSession(res, email) {
 
 router.use((req, _res, next) => {
   const session = sessions.get(tokenOf(req));
-  if (session && session.exp > Date.now()) req.user = store.getUser(session.email);
+  if (session && session.exp > Date.now()) {
+    req.user = store.getUser(session.email);
+    req.isAdmin = !!req.user && isAdminEmail(req.user.email, session.verified);
+  }
   next();
 });
 
 /* ---------- Hàm hỗ trợ ---------- */
-const publicUser = (user) =>
-  user && { email: user.email, nickname: user.nickname, hasAvatar: !!user.has_avatar };
+const publicUser = (user, isAdmin = false) =>
+  user && {
+    email: user.email,
+    nickname: user.nickname,
+    hasAvatar: !!user.has_avatar,
+    isAdmin: !!isAdmin,
+  };
 
 function needLogin(req, res, next) {
   if (!req.user) return res.status(401).json({ error: "Bạn cần đăng nhập." });
@@ -88,7 +113,7 @@ router.get("/config", (_req, res) => {
 });
 
 router.get("/me", (req, res) => {
-  res.json({ user: publicUser(req.user) });
+  res.json({ user: publicUser(req.user, req.isAdmin) });
 });
 
 router.post("/auth/google", async (req, res) => {
@@ -102,8 +127,8 @@ router.post("/auth/google", async (req, res) => {
     }
 
     const user = store.upsertUser(info.email.toLowerCase());
-    startSession(res, user.email);
-    res.json({ user: publicUser(user) });
+    startSession(res, user.email, true);
+    res.json({ user: publicUser(user, isAdminEmail(user.email, true)) });
   } catch {
     res.status(401).json({ error: "Đăng nhập Google thất bại." });
   }
@@ -119,8 +144,8 @@ router.post("/auth/dev", (req, res) => {
   }
 
   const user = store.upsertUser(email);
-  startSession(res, user.email);
-  res.json({ user: publicUser(user) });
+  startSession(res, user.email, false);
+  res.json({ user: publicUser(user, isAdminEmail(user.email, false)) });
 });
 
 router.post("/logout", (req, res) => {
@@ -142,7 +167,7 @@ router.post("/nickname", needLogin, (req, res) => {
     throw e;
   }
 
-  res.json({ user: publicUser(store.getUser(req.user.email)) });
+  res.json({ user: publicUser(store.getUser(req.user.email), req.isAdmin) });
 });
 
 /* ---------- Ảnh đại diện ---------- */
@@ -168,7 +193,7 @@ router.post("/avatar", needLogin, (req, res) => {
   }
 
   store.setAvatar(req.user.email, buffer);
-  res.json({ user: publicUser(store.getUser(req.user.email)) });
+  res.json({ user: publicUser(store.getUser(req.user.email), req.isAdmin) });
 });
 
 router.get("/avatar/:nickname", (req, res) => {
@@ -218,9 +243,11 @@ router.get("/posts/:id", findPost, (req, res) => {
   res.json({ post: req.post });
 });
 
-/* Xóa bài đăng: chỉ chủ bài mới được xóa */
+/* Xóa bài đăng: chủ bài hoặc admin mới được xóa */
 router.delete("/posts/:id", needLogin, findPost, (req, res) => {
-  if (!req.user.nickname || req.post.nickname !== req.user.nickname) {
+  const isOwner = !!req.user.nickname && req.post.nickname === req.user.nickname;
+
+  if (!isOwner && !req.isAdmin) {
     return res.status(403).json({ error: "Bạn chỉ có thể xóa bài viết của chính mình." });
   }
 

@@ -159,6 +159,8 @@
   font-size: clamp(20px, 2.8vw, 40px);
   line-height: 1.2;
   font-weight: 400;
+  color: var(--green);
+  text-transform: uppercase;
   transition: color 0.2s;
 }
 
@@ -198,6 +200,45 @@
 .option.selected {
   background: var(--green);
   color: #fff;
+}
+
+/* Hàng Trước / Tiếp nằm giữa hai đường kẻ */
+.q-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 var(--gutter);
+  padding: clamp(16px, 2.4vw, 36px) 0;
+  border-bottom: 2px solid var(--green);
+}
+
+.nav-btn {
+  min-width: clamp(96px, 22vw, 320px);
+  min-height: clamp(44px, 5.4vw, 78px);
+  padding: 0 clamp(16px, 3vw, 40px);
+  border-radius: 69px;
+  background: #fff;
+  outline: 3px solid var(--green);
+  outline-offset: -3px;
+  color: var(--green);
+  font-size: clamp(16px, 3.3vw, 48px);
+  line-height: 1.15;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.nav-btn:hover {
+  background: var(--green);
+  color: #fff;
+}
+
+.nav-btn.disabled {
+  opacity: 0.45;
+}
+
+.nav-btn[hidden] {
+  display: none;
 }
 
 .question.right {

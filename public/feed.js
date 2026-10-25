@@ -250,6 +250,134 @@ function createComments(postId, onCountChange) {
   return wrap;
 }
 
+/* ---------- Bài đăng dạng thẻ ở danh sách: nội dung + ô bình luận + bình luận mới nhất ---------- */
+const PREVIEW_COMMENTS = 1;
+
+function sortCommentsNewest(list) {
+  return list.slice().sort((a, b) => {
+    if (a.id != null && b.id != null) return b.id - a.id;
+    return (Number(b.created_at) || Date.parse(b.created_at) || 0) - (Number(a.created_at) || Date.parse(a.created_at) || 0);
+  });
+}
+
+// onOpen(post): gọi khi bấm tên/nội dung/"Xem tất cả" để mở trang chi tiết
+function createFeedPost(post, { onOpen } = {}) {
+  const card = el("article", "feed-post");
+
+  const head = el("div", "post-head fp-click");
+  head.append(makeAvatar(post.nickname, post.has_avatar), el("h2", "post-name", post.nickname || "USER"));
+
+  const body = el("p", "post-body fp-click", post.content);
+
+  if (onOpen) {
+    head.onclick = () => onOpen(post);
+    body.onclick = () => onOpen(post);
+  }
+
+  const row = el("div", "fp-comment-row");
+  const error = el("div", "form-err fp-err");
+  const list = el("div", "fp-comments");
+
+  async function loadList() {
+    let items = [];
+    try {
+      const data = await api(`/api/posts/${post.id}/comments?limit=500`);
+      items = sortCommentsNewest(data.items || []);
+    } catch {
+      list.replaceChildren();
+      return;
+    }
+
+    list.replaceChildren();
+
+    items.slice(0, PREVIEW_COMMENTS).forEach((item) => {
+      const bubble = el("div", "fp-comment-body");
+      bubble.appendChild(el("p", "", item.content));
+
+      const main = el("div", "fp-comment-main");
+      main.append(el("div", "fp-comment-name", item.nickname || "USER"), bubble);
+
+      const comment = el("div", "fp-comment");
+      const avatar = makeAvatar(item.nickname, item.has_avatar);
+      avatar.classList.add("sm");
+      comment.append(avatar, main);
+      list.appendChild(comment);
+    });
+
+    if (items.length > PREVIEW_COMMENTS && onOpen) {
+      const more = el("button", "fp-more", `Xem tất cả ${items.length} bình luận`);
+      more.type = "button";
+      more.onclick = () => onOpen(post);
+      list.appendChild(more);
+    }
+  }
+
+  function renderRow() {
+    row.innerHTML = "";
+    error.textContent = "";
+
+    const wrap = el("div", "fp-input-wrap");
+    const avatar = makeAvatar(user?.nickname || "?", !!user?.hasAvatar && !!user?.nickname);
+    avatar.classList.add("sm");
+
+    if (!user || !user.nickname) {
+      const lock = el("button", "", user ? "Đặt biệt danh để bình luận" : "Đăng nhập để bình luận");
+      lock.type = "button";
+      lock.onclick = user ? openAccount : openLogin;
+      wrap.appendChild(lock);
+      row.append(avatar, wrap);
+      return;
+    }
+
+    const input = el("input", "fp-input");
+    input.placeholder = "Comment";
+    input.maxLength = 1000;
+    input.autocomplete = "off";
+
+    input.addEventListener("keydown", async (e) => {
+      if (e.key !== "Enter" || e.isComposing) return;
+      e.preventDefault();
+
+      const content = input.value.trim();
+      if (!content) return;
+
+      input.disabled = true;
+      try {
+        await api(`/api/posts/${post.id}/comments`, { method: "POST", body: { content } });
+        input.value = "";
+        error.textContent = "";
+        await loadList(); // bình luận mới nằm trên cùng
+      } catch (err) {
+        error.textContent = err.message || "Lỗi khi gửi bình luận.";
+        if (err.status === 401) {
+          user = null;
+          refreshAuthUI();
+        }
+      }
+      input.disabled = false;
+      input.focus();
+    });
+
+    wrap.appendChild(input);
+    row.append(avatar, wrap);
+  }
+
+  const onAuth = () => {
+    if (card.isConnected) {
+      renderRow();
+    } else {
+      document.removeEventListener("auth-change", onAuth);
+    }
+  };
+  document.addEventListener("auth-change", onAuth);
+
+  renderRow();
+  loadList();
+
+  card.append(head, el("hr", "rule"), body, row, error, list);
+  return card;
+}
+
 /* ---------- Một bài đăng đầy đủ (avatar, tên, nội dung, bình luận) ---------- */
 function createPostView(post) {
   const view = el("article", "post-view");
