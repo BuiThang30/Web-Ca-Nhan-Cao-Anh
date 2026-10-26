@@ -184,32 +184,44 @@ function submitAnswers() {
 }
 
 /* ---------- Kết quả ---------- */
-function findResult(topic, answers) {
-  let matchedResult = null;
-  let matchCount = 0;
+// Đáp án "không có triệu chứng": "Không", "Không sốt", "Không ho", "Không đau đầu",
+// "Bình thường / Không đo"... Câu nào không có đáp án kiểu này (vd: hỏi vị trí đau) thì bỏ qua.
+const NONE_ANSWER = /^(không|bình thường)/i;
 
-  for (const result of topic.results) {
-    let isMatch = true;
-    for (const key in result.conditions) {
-      const qIndex = parseInt(key, 10);
-      const reqAns = result.conditions[key];
-      const userAns = answers[qIndex];
+function matchesResult(topic, result, answers) {
+  const conditions = result.conditions;
 
-      if (Array.isArray(reqAns)) {
-        if (!reqAns.includes(userAns)) isMatch = false;
-      } else {
-        if (userAns !== reqAns) isMatch = false;
-      }
-    }
-    
-    if (isMatch) {
-      matchCount++;
-      matchedResult = result;
-    }
+  // 1. Các câu trong điều kiện phải khớp đúng
+  for (const key in conditions) {
+    const reqAns = conditions[key];
+    const userAns = answers[parseInt(key, 10)];
+
+    const ok = Array.isArray(reqAns) ? reqAns.includes(userAns) : userAns === reqAns;
+    if (!ok) return false;
   }
 
-  if (matchCount !== 1) return null;
-  return matchedResult;
+  // 2. Mọi câu còn lại phải chọn "không", chọn khác là không đủ căn cứ -> không cho kết quả
+  return topic.questions.every((question, index) => {
+    if (Object.prototype.hasOwnProperty.call(conditions, index)) return true;
+
+    const none = question.options.find((option) => NONE_ANSWER.test(option.text.trim()));
+    if (!none) return true;
+
+    return answers[index] === none.key;
+  });
+}
+
+function findResult(topic, answers) {
+  const matched = topic.results.filter((result) => matchesResult(topic, result, answers));
+  if (!matched.length) return null;
+
+  // Nhiều bệnh cùng khớp (vd: Sỏi thận bao gồm cả điều kiện của Nhiễm khuẩn tiết niệu)
+  // -> chọn bệnh có nhiều điều kiện nhất; nếu vẫn ngang nhau thì "chưa xác định"
+  const size = (result) => Object.keys(result.conditions).length;
+  const most = Math.max(...matched.map(size));
+  const best = matched.filter((result) => size(result) === most);
+
+  return best.length === 1 ? best[0] : null;
 }
 
 function renderResult() {
