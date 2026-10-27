@@ -18,7 +18,7 @@ function route() {
 
   listBox.hidden = !!post;
   articleBox.hidden = !post;
-  document.title = (post ? post.title : "Blog") + " - HealSearch";
+  document.title = (post ? post.title : "Blog") + " - Healseer";
 
   if (post) {
     $("#articleTitle").textContent = post.title;

@@ -5,10 +5,6 @@ const db = new Database(process.env.DB_FILE || path.join(__dirname, "healsearch.
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
-/*
-  Bảng cũ `comments` (bình luận chung, chưa gắn với bài đăng) không còn dùng.
-  Nếu gặp bảng cũ thì đổi tên thành comments_old để giữ lại dữ liệu.
-*/
 const commentColumns = db.prepare("PRAGMA table_info(comments)").all();
 if (commentColumns.length && !commentColumns.some((column) => column.name === "post_id")) {
   db.exec("DROP TABLE IF EXISTS comments_old; ALTER TABLE comments RENAME TO comments_old;");
